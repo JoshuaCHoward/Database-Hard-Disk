@@ -233,19 +233,19 @@ repl:
 
 			switch stmt.Kind {
 			case CreateIndexKind:
-				err = b.CreateIndex(ast.Statements[0].CreateIndexStatement)
+				err = b.CreateIndex(stmt.CreateIndexStatement)
 				if err != nil {
 					fmt.Println("Error adding index on table:", err)
 					continue repl
 				}
 			case CreateTableKind:
-				err = b.CreateTable(ast.Statements[0].CreateTableStatement)
+				err = b.CreateTable(stmt.CreateTableStatement)
 				if err != nil {
 					fmt.Println("Error creating table:", err)
 					continue repl
 				}
 			case DropTableKind:
-				err = b.DropTable(ast.Statements[0].DropTableStatement)
+				err = b.DropTable(stmt.DropTableStatement)
 				if err != nil {
 					fmt.Println("Error dropping table:", err)
 					continue repl

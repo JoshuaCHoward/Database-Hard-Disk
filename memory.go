@@ -841,6 +841,12 @@ func (mb *MemoryBackend) GetTables() []TableMetadata {
 	return tms
 }
 
+//func NewMemoryBackend() *MemoryBackend {
+//	return &MemoryBackend{
+//		tables: map[string]*table{},
+//	}
+//}
+
 func NewMemoryBackend() *MemoryBackend {
 	return &MemoryBackend{
 		tables: map[string]*table{},
