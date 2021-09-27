@@ -3,9 +3,8 @@ package LSM
 import (
 	"bytes"
 	"fmt"
-	"github.com/eatonphil/gosql"
-	"github.com/google/btree"
 	"github.com/google/uuid"
+	gosql "home"
 	"io/ioutil"
 	"os"
 	"path/filepath"
@@ -176,20 +175,28 @@ func (eb *MemoryBackend) Insert(crt *gosql.InsertStatement) error {
 func Write(buffer *LinkedList) {
 	bytesBuffer := bytes.Buffer{}
 	bufferNode := buffer.List.right
+	filePath := filepath.Join(buffer.fileLocation, uuid.NewString())
 	for true {
 		bytesBuffer.WriteString(fmt.Sprintf("%d\n", bufferNode.value))
-		buffer.tree.ReplaceOrInsert(btree.Int(bufferNode.value))
+		treeItem := Item{
+			Value: struct {
+				int
+				string
+			}{bufferNode.value, filePath},
+		}
+		println(treeItem.Value.string)
+		buffer.tree.ReplaceOrInsert(treeItem)
 		if bufferNode.right == nil {
 			break
 		}
 		bufferNode = bufferNode.right
 	}
 
-	filePath := filepath.Join(buffer.fileLocation, uuid.NewString())
 	newFile, _ := os.Create(filePath)
 	bytesBuffer.WriteTo(newFile)
 	buffer.length = 0
 	newFile.Close()
+	UpdateTreeFile(buffer)
 	bytesBuffer.Reset()
 	buffer.List.right = nil
 }

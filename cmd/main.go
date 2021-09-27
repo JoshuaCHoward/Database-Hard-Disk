@@ -1,8 +1,8 @@
 package main
 
 import (
-	"github.com/eatonphil/gosql"
-	"github.com/eatonphil/gosql/LSM"
+	gosql "home"
+	"home/LSM"
 )
 
 func main() {

@@ -182,6 +182,9 @@ repl:
 		fmt.Print("# ")
 		line, err := l.Readline()
 		if err == readline.ErrInterrupt {
+			//if (reflect.TypeOf(b).String()=="*LSM.MemoryBackend"){
+			//	b.(LSM.MemoryBackend)
+			//}
 			if len(line) == 0 {
 				break
 			} else {
