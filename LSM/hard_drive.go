@@ -1,6 +1,7 @@
 package LSM
 
 import (
+	"bufio"
 	"bytes"
 	"fmt"
 	"github.com/google/uuid"
@@ -49,6 +50,36 @@ func (eb *MemoryBackend) CreateTable(crt *gosql.CreateTableStatement) error {
 	return nil
 }
 
+func (eb *MemoryBackend) Select(crt *gosql.SelectStatement) (*gosql.Results, error) {
+
+	println(crt.From.Value)
+	table := (crt.From.Value)
+	var text []gosql.ResultColumn
+	for _, actualValue := range *crt.Item {
+		keyValue, _ := strconv.Atoi(actualValue.Exp.Literal.Value)
+		value, _ := eb.tableBuffers[table].tree.Get(keyValue)
+		stringValue := fmt.Sprintf("%v", value)
+		file, _ := os.Open(stringValue)
+		scanner := bufio.NewScanner(file)
+		scanner.Split(bufio.ScanLines)
+		for scanner.Scan() {
+			pageLine := scanner.Text()[0:1]
+			if pageLine == strconv.Itoa(keyValue) {
+				result := gosql.ResultColumn{
+					Name: scanner.Text()[2:],
+				}
+				text = append(text, result)
+
+				println(result.Name)
+
+			}
+		}
+	}
+
+	return &gosql.Results{Columns: text}, nil
+}
+
+//SELECT 1 FROM users
 //func (eb *MemoryBackend) Sort(jsonArray []DatabaseItem){
 //	for i, json := range jsonArray{
 //		println(json.Key)
@@ -113,6 +144,7 @@ func Append(buffer *LinkedList, item DatabaseItem) *LinkedList {
 	num, _ := strconv.Atoi(item.Key)
 	newNode := &Node{
 		value: num,
+		spare: item.Value,
 	}
 	bufferNode := buffer.List
 	for true {
@@ -177,15 +209,15 @@ func Write(buffer *LinkedList) {
 	bufferNode := buffer.List.right
 	filePath := filepath.Join(buffer.fileLocation, uuid.NewString())
 	for true {
-		bytesBuffer.WriteString(fmt.Sprintf("%d\n", bufferNode.value))
+		bytesBuffer.WriteString(fmt.Sprintf("%d %v\n", bufferNode.value, bufferNode.spare))
 		treeItem := Item{
 			Value: struct {
-				int
-				string
+				Int    int
+				String string
 			}{bufferNode.value, filePath},
 		}
-		println(treeItem.Value.string)
-		buffer.tree.ReplaceOrInsert(treeItem)
+		println(treeItem.Value.Int)
+		buffer.tree.Put(treeItem.Value.Int, treeItem.Value.String)
 		if bufferNode.right == nil {
 			break
 		}
